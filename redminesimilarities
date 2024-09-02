@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Redminesearch\Commands\RedminePingCommand;
+use Symfony\Component\Console\Application;
+
+require __DIR__ . '/vendor/autoload.php';
+
+define('APP_PATH', __DIR__);
+if (is_file(APP_PATH . '/config.yaml')) {
+    $parser = new Symfony\Component\Yaml\Yaml();
+    $GLOBALS['APPCONFIG'] = $parser->parse(file_get_contents(APP_PATH . '/config.yaml'));
+    unset($parser);
+}
+
+$application = new Application();
+$application->addCommands([
+    new RedminePingCommand(),
+]);
+$application->run();
