@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Redminesearch\Commands;
 
 use Bluestone\Redmine\Client;
@@ -22,7 +24,7 @@ class RedminePingCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
 
         $httpHandler = new HttpHandler($GLOBALS['APPCONFIG']['redmine']['url'], $GLOBALS['APPCONFIG']['redmine']['key']);

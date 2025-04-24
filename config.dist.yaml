@@ -1,0 +1,10 @@
+redmine:
+  url:
+  key:
+openai:
+  embeddingmodel: text-embedding-3-small
+  key: ""
+redis:
+  connect:
+    host: 127.0.0.1
+  vectorkeyname: redmine

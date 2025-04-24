@@ -3,7 +3,9 @@
 
 declare(strict_types=1);
 
+use Redminesearch\Commands\RedmineIssuesCommand;
 use Redminesearch\Commands\RedminePingCommand;
+use Redminesearch\Commands\RedmineSyncCommand;
 use Symfony\Component\Console\Application;
 
 require __DIR__ . '/vendor/autoload.php';
@@ -18,5 +20,7 @@ if (is_file(APP_PATH . '/config.yaml')) {
 $application = new Application();
 $application->addCommands([
     new RedminePingCommand(),
+    new RedmineIssuesCommand(),
+    new RedmineSyncCommand(),
 ]);
 $application->run();

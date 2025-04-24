@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Redminesearch\Services;
 
 use OpenAI;
@@ -22,7 +24,7 @@ class EmbeddingService implements LoggerAwareInterface
     public function __construct()
     {
         $this->logger = new NullLogger();
-        $this->cache = new FilesystemAdapter(__CLASS__, 0, APP_PATH . '/.cache');
+        $this->cache = new FilesystemAdapter(str_replace('\\','-',__CLASS__), 0, APP_PATH . '/.cache');
     }
 
     /**
@@ -33,12 +35,12 @@ class EmbeddingService implements LoggerAwareInterface
      * @return array{title:float[],content:float[],titlecontent:float[]}
      * @throws InvalidArgumentException
      */
-    public function getEmbeddings(int $id, string $title, string $content): array
+    public function getEmbeddings(int|string $id, string $content): array
     {
         $model = $GLOBALS['APPCONFIG']['openai']['embeddingmodel'] ?? self::EMBEDDINGMODEL;
 
         $key = sha1($model . '-' . (string)$id);
-        return $this->cache->get($key, function (ItemInterface $item) use ($model, $title, $content): array {
+        return $this->cache->get($key, function (ItemInterface $item) use ($model, $content): array {
 
             $result = [];
 
@@ -46,22 +48,10 @@ class EmbeddingService implements LoggerAwareInterface
             $embedding = $client->embeddings()->create([
                 'encoding_format' => 'float',
                 'model' => $model,
-                'input' => $title,
-            ]);
-            $result['title'] = $embedding->toArray()['data'][0]['embedding'];
-            $embedding = $client->embeddings()->create([
-                'encoding_format' => 'float',
-                'model' => $model,
                 'input' => $content,
             ]);
-            $result['content'] = $embedding->toArray()['data'][0]['embedding'];
-            $embedding = $client->embeddings()->create([
-                'encoding_format' => 'float',
-                'model' => $model,
-                'input' => $title . "\n" . $content,
-            ]);
-            $result['titlecontent'] = $embedding->toArray()['data'][0]['embedding'];
-            return $result;
+
+            return $embedding->toArray()['data'][0]['embedding'];
         });
 
     }
