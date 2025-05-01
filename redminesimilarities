@@ -22,5 +22,6 @@ $application->addCommands([
     new RedminePingCommand(),
     new RedmineIssuesCommand(),
     new RedmineSyncCommand(),
+    new \Redminesearch\Commands\CheckIssuesCommand(),
 ]);
 $application->run();

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Redminesearch\Commands;
 
 use Bluestone\Redmine\Entities\Issue;
-use Exception;
 use Redminesearch\Services\EmbeddingService;
 use Redminesearch\Services\RedisService;
 use Redminesearch\Services\RedmineService;
@@ -65,7 +64,7 @@ class RedmineSyncCommand extends Command
             foreach ($result->items as $issue) {
                 try {
                     $set = [
-                        'uid'       => $issue->id,
+                        'uid'     => (int)$issue->id,
                         'subject'   => $issue->subject,
                         'content'   => $issue->subject . "\n" . $issue->description,
                         'embedding' => $embedding->getEmbeddings(
@@ -74,7 +73,7 @@ class RedmineSyncCommand extends Command
                         ),
                     ];
                     $redis->store($set);
-                } catch ( Exception $e) {
+                } catch (\Exception $e) {
                     $logger->error($e->getMessage());
                 }
             }

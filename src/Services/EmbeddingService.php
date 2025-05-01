@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Redminesearch\Services;
 
-use OpenAI;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -50,7 +49,7 @@ class EmbeddingService implements LoggerAwareInterface
 
             $result = [];
 
-            $clientFactory = OpenAI::factory()
+            $clientFactory = \OpenAI::factory()
                 ->withHttpHeader('OpenAI-Beta', 'assistants=v2');
 
             if (isset($GLOBALS['APPCONFIG']['openai']['key'])) {
@@ -71,6 +70,11 @@ class EmbeddingService implements LoggerAwareInterface
             return $embedding->toArray()['data'][0]['embedding'];
         });
 
+    }
+
+    public function getDimensions(): int
+    {
+        return $this->dimensions;
     }
 
 }

@@ -13,7 +13,6 @@ use Predis\Response\ServerException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use function json_encode;
 
 class RedisService implements LoggerAwareInterface
 {
@@ -94,7 +93,7 @@ class RedisService implements LoggerAwareInterface
     public function store(array $set): void
     {
         $this->logger->info('store {uid}', $set);
-        $this->client->jsonset($this->vectorkey . ':' . $set['uid'], '$', json_encode($set));
+        $this->client->jsonset($this->vectorkey . ':' . $set['uid'], '$', \json_encode($set));
     }
 
     public function get(int $uid): array
@@ -116,6 +115,30 @@ class RedisService implements LoggerAwareInterface
     public function getVectorkey(): string
     {
         return $this->vectorkey;
+    }
+
+    public function normalizeRedisResult(array $result): array
+    {
+        $count = array_shift($result);
+        $return = [];
+        $key = null;
+        foreach ($result as $value) {
+            if ($key === null) {
+                $key = $value;
+            } else {
+                $values = [];
+                for ($i = 0,$l = count($value);$i < $l;$i++) {
+                    $k = $value[$i];
+                    $i++;
+                    $v = $value[$i];
+                    $values[$k] = $v;
+                }
+                $return[ $key ] = $values;
+                $key            = null;
+            }
+        }
+
+        return $return;
     }
 
 }
