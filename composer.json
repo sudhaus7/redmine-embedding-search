@@ -9,6 +9,15 @@
             "php-http/discovery": true
         }
     },
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Frank Berger",
+			"email": "fberger@sudhaus7.de",
+			"homepage": "https://sudhaus7.de",
+			"role": "Developer"
+		}
+	],
     "require": {
         "php": "8.3.* || 8.2.*",
         "bluestone/redmine-api": "^1.2",
