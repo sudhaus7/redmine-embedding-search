@@ -56,7 +56,7 @@ class EmbeddingService implements LoggerAwareInterface
                 $clientFactory->withApiKey($GLOBALS['APPCONFIG']['openai']['key']);
             }
             if (isset($GLOBALS['APPCONFIG']['openai']['baseuri'])) {
-                $clientFactory->withBaseUri($GLOBALS['APPCONFIG']['openai']['baseuri']);
+                $clientFactory->withBaseUri(trim($GLOBALS['APPCONFIG']['openai']['baseuri'],'/'));
             }
             $client = $clientFactory->make();
 
