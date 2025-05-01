@@ -68,7 +68,6 @@ class CheckIssuesCommand extends Command
                 $searchArguments
                     ->dialect('2')
                     ->sortBy('__vector_score')
-                    ->limit(1, 5)
                     ->addReturn(3, '__vector_score', 'uid', 'subject')
                     ->params([ 'query_vector', pack('f' . $embeddingService->getDimensions(), ... $embedding) ]);
 
@@ -83,12 +82,15 @@ class CheckIssuesCommand extends Command
                 );
                 $table = new Table($output);
                 foreach ($results as $key => $searchresult) {
-                    $uid = explode(':', $key)[1];
+                    $uid = (int)explode(':', $key)[1];
+                    if ($issue->id === $uid) {
+                        continue;
+                    }
                     $table->addRow([
                         round((float)$searchresult['__vector_score'], 5),
                         $uid,
                         $searchresult['subject'],
-                        sprintf('[%s/issues/%d]', trim($GLOBALS['APPCONFIG']['redmine']['url'], '/'), $uid),
+                        sprintf('%s/issues/%d', trim($GLOBALS['APPCONFIG']['redmine']['url'], '/'), $uid),
                     ]);
                 }
                 $table->render();

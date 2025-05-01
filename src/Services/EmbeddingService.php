@@ -32,6 +32,12 @@ class EmbeddingService implements LoggerAwareInterface
 
     }
 
+    public function clearCache(): void
+    {
+        $this->logger->info('clearing embedding cache');
+        $this->cache->clear();
+    }
+
     /**
      * @param int $id
      * @param $title

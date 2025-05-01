@@ -23,6 +23,7 @@ class RedmineSyncCommand extends Command
             ->setDescription('Get Issues from redmine, create embeddings and write them into Redis')
             ->addArgument('from', InputArgument::OPTIONAL, 'The timestamp from which issues should be synced, in the Format [YYYY-MM-DD|lastsync|all]', 'lastsync')
             ->addOption('recreate', null, InputOption::VALUE_NONE, 'force recreation of the index')
+            ->addOption('clearcache', null, InputOption::VALUE_NONE, 'clear the cache')
         ;
     }
 
@@ -32,12 +33,16 @@ class RedmineSyncCommand extends Command
         $logger = new ConsoleLogger($output);
 
         $redis = new RedisService(mylogger: $logger);
+
         if ($input->getOption('recreate')) {
             $redis->createIndex();
         }
 
         $embedding = new EmbeddingService();
         $embedding->setLogger($logger);
+        if ($input->getOption('clearcache')) {
+            $embedding->clearCache();
+        }
 
         $redmine = RedmineService::factory($GLOBALS['APPCONFIG']['redmine']['url'])->getConnection();
 
@@ -47,7 +52,10 @@ class RedmineSyncCommand extends Command
         ];
         switch ($input->getArgument('from')) {
             case 'lastsync':
-                $filter['created_on'] = '2025-01-01';
+                $lastsync = $redis->getClient()->get($redis->getIndexname() . ':lastsync');
+                if ($lastsync) {
+                    $filter['created_on'] = '>=' . $lastsync;
+                }
                 break;
             case 'all':
                 break;
@@ -82,7 +90,9 @@ class RedmineSyncCommand extends Command
             $result = $redmine->issue()->all($filter);
 
         }
-
+        if ($input->getArgument('from') === 'lastsync' || $input->getArgument('from') === 'all') {
+            $redis->getClient()->set($redis->getIndexname() . ':lastsync', date('Y-m-d'));
+        }
         return Command::SUCCESS;
     }
 }
