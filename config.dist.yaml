@@ -1,12 +1,13 @@
 redmine:
   url:
-  key:
+  # rest api key if needed
+  # key:
 openai:
   # the embedding model to use
   embeddingmodel: text-embedding-3-small
 
   # base URL if using a non openai.com endpoint
-  # baseuri: http://127.0.0.1/
+  # baseuri: http://localhost:11434/v1
 
   # key if needed
   # key: ""
@@ -16,4 +17,6 @@ openai:
 redis:
   connect:
     host: 127.0.0.1
+    port: 6379
+    database: 0
   vectorkeyname: redmine
