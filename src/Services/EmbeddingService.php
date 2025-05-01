@@ -67,6 +67,11 @@ class EmbeddingService implements LoggerAwareInterface
                 'input' => $content,
             ]);
 
+            try {
+                $item->tag([$model]);
+            } catch (\Exception $e) {
+            }
+
             return $embedding->toArray()['data'][0]['embedding'];
         });
 
