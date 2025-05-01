@@ -2,17 +2,22 @@
 
 ## Usage
 
-updating the index
+### updating the index
 
 ```bash
-./redminesimilarities redmine:sync
+./redminesimilarities redmine:sync -vvv
 ```
+Without any other option it will sync from the last synced date. If no synced date is found in REDIS, it will sync and index all redmine issues.
 
-comparing today's issues against the index
+
+### comparing today's issues against the index
 
 ```bash
 ./redminesimilarities check 2025-05-01
 ```
+
+the date is optional, it will use the current date if necessary. The output will list the issue, issue subject and then in a table which closely matched issues can be found for the given issue.
+
 
 see help for more options
 
