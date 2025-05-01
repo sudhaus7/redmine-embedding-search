@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Redminesearch\Commands;
 
-use Bluestone\Redmine\Client;
 use Bluestone\Redmine\Entities\Issue;
-use Bluestone\Redmine\HttpHandler;
+use Exception;
 use Redminesearch\Services\EmbeddingService;
 use Redminesearch\Services\RedisService;
+use Redminesearch\Services\RedmineService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,23 +32,19 @@ class RedmineSyncCommand extends Command
 
         $logger = new ConsoleLogger($output);
 
-
-
         $redis = new RedisService(mylogger: $logger);
         if ($input->getOption('recreate')) {
             $redis->createIndex();
         }
 
         $embedding = new EmbeddingService();
-        $embedding->setLogger( $logger);
+        $embedding->setLogger($logger);
 
-
-        $httpHandler = new HttpHandler($GLOBALS['APPCONFIG']['redmine']['url'], $GLOBALS['APPCONFIG']['redmine']['key']);
-        $redmine = new Client($httpHandler);
+        $redmine = RedmineService::factory($GLOBALS['APPCONFIG']['redmine']['url'])->getConnection();
 
         $filter = [
-            'status_id'=>'*',
-            'offset'=>0,
+            'status_id' => '*',
+            'offset' => 0,
         ];
         switch ($input->getArgument('from')) {
             case 'lastsync':
@@ -63,19 +59,27 @@ class RedmineSyncCommand extends Command
         $result = $redmine->issue()->all($filter);
 
         $count = 0;
-        while($result->total > $count) {
-            $logger->info( 'Running issues {offset}',$filter);
+        while ($result->total > $count) {
+            $logger->info('Running issues {offset}', $filter);
             /** @var Issue $issue */
             foreach ($result->items as $issue) {
-                $set = [
-                    'uid'=>$issue->id,
-                    'content'=>$issue->subject."\n".$issue->description,
-                    'embedding'=> $embedding->getEmbeddings( $redis->getVectorkey().':'.$issue->id, $issue->subject."\n".$issue->description)
-                ];
-                $redis->store( $set);
+                try {
+                    $set = [
+                        'uid'       => $issue->id,
+                        'subject'   => $issue->subject,
+                        'content'   => $issue->subject . "\n" . $issue->description,
+                        'embedding' => $embedding->getEmbeddings(
+                            $redis->getVectorkey() . ':' . $issue->id,
+                            $issue->subject . "\n" . $issue->description
+                        ),
+                    ];
+                    $redis->store($set);
+                } catch ( Exception $e) {
+                    $logger->error($e->getMessage());
+                }
             }
             $count = $count + $result->limit;
-            $filter['offset']=$count;
+            $filter['offset'] = $count;
             $result = $redmine->issue()->all($filter);
 
         }

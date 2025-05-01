@@ -10,7 +10,7 @@
         }
     },
     "require": {
-        "php": "8.3.* || 8.2.* || 8.1.*",
+        "php": "8.3.* || 8.2.*",
         "bluestone/redmine-api": "^1.2",
         "guzzlehttp/guzzle": "^7.9",
         "nyholm/psr7": "^1.8",

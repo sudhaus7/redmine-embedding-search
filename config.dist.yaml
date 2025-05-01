@@ -2,8 +2,17 @@ redmine:
   url:
   key:
 openai:
+  # the embedding model to use
   embeddingmodel: text-embedding-3-small
-  key: ""
+
+  # base URL if using a non openai.com endpoint
+  # baseuri: http://127.0.0.1/
+
+  # key if needed
+  # key: ""
+
+  # the produced embedding dimensions
+  # dimensions: 1536
 redis:
   connect:
     host: 127.0.0.1

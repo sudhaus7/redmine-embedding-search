@@ -21,10 +21,16 @@ class EmbeddingService implements LoggerAwareInterface
 
     protected AbstractAdapter $cache;
 
+    protected int $dimensions = 1536;
+
     public function __construct()
     {
         $this->logger = new NullLogger();
-        $this->cache = new FilesystemAdapter(str_replace('\\','-',__CLASS__), 0, APP_PATH . '/.cache');
+        $this->cache = new FilesystemAdapter(str_replace('\\', '-', __CLASS__), 0, APP_PATH . '/.cache');
+        if (isset($GLOBALS['APPCONFIG']['openai']['dimensions'])) {
+            $this->dimensions = (int)$GLOBALS['APPCONFIG']['openai']['dimensions'];
+        }
+
     }
 
     /**
@@ -44,9 +50,20 @@ class EmbeddingService implements LoggerAwareInterface
 
             $result = [];
 
-            $client = OpenAI::client($GLOBALS['APPCONFIG']['openai']['key']);
+            $clientFactory = OpenAI::factory()
+                ->withHttpHeader('OpenAI-Beta', 'assistants=v2');
+
+            if (isset($GLOBALS['APPCONFIG']['openai']['key'])) {
+                $clientFactory->withApiKey($GLOBALS['APPCONFIG']['openai']['key']);
+            }
+            if (isset($GLOBALS['APPCONFIG']['openai']['baseuri'])) {
+                $clientFactory->withBaseUri($GLOBALS['APPCONFIG']['openai']['baseuri']);
+            }
+            $client = $clientFactory->make();
+
             $embedding = $client->embeddings()->create([
                 'encoding_format' => 'float',
+                'dimensions' => $this->dimensions,
                 'model' => $model,
                 'input' => $content,
             ]);

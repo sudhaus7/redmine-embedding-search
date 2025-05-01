@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Redminesearch\Commands;
 
-use Bluestone\Redmine\Client;
 use Bluestone\Redmine\Entities\Issue;
-use Bluestone\Redmine\HttpHandler;
+use Redminesearch\Services\RedmineService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -26,8 +25,7 @@ class RedmineIssuesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $httpHandler = new HttpHandler($GLOBALS['APPCONFIG']['redmine']['url'], $GLOBALS['APPCONFIG']['redmine']['key']);
-        $redmine = new Client($httpHandler);
+        $redmine = RedmineService::factory($GLOBALS['APPCONFIG']['redmine']['url'])->getConnection();
 
         $filter = [];
         if ($input->getArgument('date')) {

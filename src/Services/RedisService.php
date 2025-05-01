@@ -25,12 +25,17 @@ class RedisService implements LoggerAwareInterface
 
     protected string $vectorkey;
 
+    protected int $dimensions = 1536;
+
     public function __construct(?Client $client = null, ?string $vectorkey = null, ?LoggerInterface $mylogger = null)
     {
         if ($mylogger instanceof LoggerInterface) {
             $this->logger = $mylogger;
         }
         $this->vectorkey = $vectorkey ?? $GLOBALS['APPCONFIG']['redis']['vectorkeyname'];
+        if (isset($GLOBALS['APPCONFIG']['openai']['dimensions'])) {
+            $this->dimensions = (int)$GLOBALS['APPCONFIG']['openai']['dimensions'];
+        }
 
         $this->indexname = 'idx:' . $this->vectorkey;
 
@@ -74,8 +79,9 @@ class RedisService implements LoggerAwareInterface
         $this->logger->info('Creating Index {indexname}', ['indexname' => $this->indexname]);
         $fields = [
             new NumericField('$.issue', 'uid'),
+            new TextField('$.subject', 'subject'),
             new TextField('$.text', 'text'),
-            new VectorField('$.embedding', 'FLAT', ['TYPE', 'FLOAT32', 'DIM', '1536', 'DISTANCE_METRIC', 'COSINE'], 'vector'),
+            new VectorField('$.embedding', 'FLAT', ['TYPE', 'FLOAT32', 'DIM', $this->dimensions, 'DISTANCE_METRIC', 'COSINE'], 'vector'),
         ];
 
         $arguments = new CreateArguments();
@@ -87,7 +93,7 @@ class RedisService implements LoggerAwareInterface
 
     public function store(array $set): void
     {
-        $this->logger->info('store {uid}',$set);
+        $this->logger->info('store {uid}', $set);
         $this->client->jsonset($this->vectorkey . ':' . $set['uid'], '$', json_encode($set));
     }
 
@@ -97,18 +103,19 @@ class RedisService implements LoggerAwareInterface
         return json_decode($result);
     }
 
-    public function getClient(): Client {
+    public function getClient(): Client
+    {
         return $this->client;
     }
 
-    public function getIndexname(): string {
+    public function getIndexname(): string
+    {
         return $this->indexname;
     }
 
-    public function getVectorkey(): string {
+    public function getVectorkey(): string
+    {
         return $this->vectorkey;
     }
-
-
 
 }
